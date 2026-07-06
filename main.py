@@ -43,12 +43,9 @@ def get_input_with_default(prompt, max_val):
     user_input = input(f"{prompt} [Default 1]: ").strip()
     if user_input == "":
         return 0
-    try:
-        val = int(user_input) - 1
-        if 0 <= val < max_val:
-            return val
-    except ValueError:
-        pass
+    val = int(user_input) - 1
+    if 0 <= val < max_val:
+        return val
     return None
 
 
@@ -90,9 +87,6 @@ def run_search():
 
     torrent_data = torrents[t_idx]
     magnet = get_magnet_link(torrent_data["hash"], selected_movie["title_long"])
-
-    print("\n--- Magnet Link ---")
-    print(magnet)
 
     # Prepare data for YAML
     new_entry = {
