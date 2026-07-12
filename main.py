@@ -129,8 +129,10 @@ def run_search(file_path):
         "status": "",
     }
 
-    # Using the passed file_path parameter
+    save_to_yaml(file_path, new_entry)
 
+
+def save_to_yaml(file_path, new_entry):
     try:
         existing_data = []
         if os.path.exists(file_path):
@@ -149,21 +151,55 @@ def run_search(file_path):
         print(f"Error saving to file: {e}")
 
 
+def run_manual_fill(file_path):
+    print("\n--- Manual Entry ---")
+    title = input("Movie Title: ").strip()
+    if not title:
+        print("Title cannot be empty.")
+        return
+    quality = input("Quality (e.g. 1080p) [Default 1080p]: ").strip() or "1080p"
+    format_val = input("Format (e.g. web.x264) [Default web.x264]: ").strip() or "web.x264"
+    size = input("Size (e.g. 1.5 GB): ").strip()
+    magnet = input("Magnet Link: ").strip()
+    if not magnet:
+        print("Magnet link cannot be empty.")
+        return
+    status = input("Status [Default '']: ").strip()
+
+    new_entry = {
+        "title": title,
+        "quality": quality,
+        "format": format_val,
+        "size": size,
+        "magnet": magnet,
+        "status": status,
+    }
+    save_to_yaml(file_path, new_entry)
+
+
 @app.command()
 def main(
     file: str = typer.Argument("links.yaml", help="Path to the YAML file to save links")
 ):
     while True:
-        run_search(file)
-
-        repeat = (
-            input("\nWould you like to perform another search? (y/n) [Default y]: ")
-            .strip()
-            .lower()
-        )
-        if repeat == "n":
+        print("\nMain Menu:")
+        print("  (s) Search movies")
+        print("  (m) Manually fill form")
+        print("  (q) Quit")
+        
+        choice = input("Choose an option [Default s]: ").strip().lower()
+        if choice == "":
+            choice = "s"
+            
+        if choice == "s":
+            run_search(file)
+        elif choice == "m":
+            run_manual_fill(file)
+        elif choice == "q":
             print("Goodbye!")
             break
+        else:
+            print("Invalid option. Please try again.")
 
 
 if __name__ == "__main__":
