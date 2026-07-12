@@ -2,7 +2,10 @@ import os
 import urllib.parse
 
 import requests
+import typer
 import yaml
+
+app = typer.Typer()
 
 
 def search_movies(query):
@@ -52,7 +55,7 @@ def get_input_with_default(prompt, max_val, default_val=0):
     return None
 
 
-def run_search():
+def run_search(file_path):
     movie_name = input("\nEnter the movie name to search: ")
     if not movie_name.strip():
         return
@@ -126,7 +129,7 @@ def run_search():
         "status": "",
     }
 
-    file_path = "links.yaml"
+    # Using the passed file_path parameter
 
     try:
         existing_data = []
@@ -146,9 +149,12 @@ def run_search():
         print(f"Error saving to file: {e}")
 
 
-def main():
+@app.command()
+def main(
+    file: str = typer.Argument("links.yaml", help="Path to the YAML file to save links")
+):
     while True:
-        run_search()
+        run_search(file)
 
         repeat = (
             input("\nWould you like to perform another search? (y/n) [Default y]: ")
@@ -161,4 +167,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    app()
