@@ -39,13 +39,16 @@ def get_magnet_link(hash_code, movie_title):
     return f"{base_url}{hash_code}&dn={urllib.parse.quote(movie_title)}{tracker_str}"
 
 
-def get_input_with_default(prompt, max_val):
-    user_input = input(f"{prompt} [Default 1]: ").strip()
+def get_input_with_default(prompt, max_val, default_val=0):
+    user_input = input(f"{prompt} [Default {default_val + 1}]: ").strip()
     if user_input == "":
-        return 0
-    val = int(user_input) - 1
-    if 0 <= val < max_val:
-        return val
+        return default_val
+    try:
+        val = int(user_input) - 1
+        if 0 <= val < max_val:
+            return val
+    except ValueError:
+        pass
     return None
 
 
@@ -80,7 +83,32 @@ def run_search():
             f"{i + 1}. {torrent['quality']} [{torrent['type']}.{torrent['video_codec']}] ({torrent['size']})"
         )
 
-    t_idx = get_input_with_default("Choose a quality", len(torrents))
+    default_t_idx = 0
+    found_1080_x265 = None
+    for i, torrent in enumerate(torrents):
+        q = torrent.get("quality", "")
+        codec = torrent.get("video_codec", "")
+        if "1080" in q and codec.lower() == "x265":
+            found_1080_x265 = i
+            break
+
+    if found_1080_x265 is not None:
+        default_t_idx = found_1080_x265
+    else:
+        candidates = []
+        for i, torrent in enumerate(torrents):
+            q = torrent.get("quality", "")
+            if "1080" in q:
+                size_bytes = torrent.get("size_bytes")
+                if size_bytes is not None:
+                    candidates.append((size_bytes, i))
+                else:
+                    candidates.append((float("inf"), i))
+        if candidates:
+            candidates.sort(key=lambda x: x[0])
+            default_t_idx = candidates[0][1]
+
+    t_idx = get_input_with_default("Choose a quality", len(torrents), default_t_idx)
     if t_idx is None:
         print("Invalid selection.")
         return
